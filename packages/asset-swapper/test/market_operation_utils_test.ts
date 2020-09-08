@@ -24,7 +24,7 @@ import {
     SELL_SOURCE_FILTER,
     ZERO_AMOUNT,
 } from '../src/utils/market_operation_utils/constants';
-import { createFillPaths } from '../src/utils/market_operation_utils/fills';
+import { createFills } from '../src/utils/market_operation_utils/fills';
 import { DexOrderSampler } from '../src/utils/market_operation_utils/sampler';
 import {
     DexSample,
@@ -1294,7 +1294,7 @@ describe.only('MarketOperationUtils tests', () => {
 
             it('batches contiguous bridge sources', async () => {
                 const rates: RatesBySource = { ...ZERO_RATES };
-                rates[ERC20BridgeSource.Native] = [0.5, 0.01, 0.01, 0.01];
+                rates[ERC20BridgeSource.Native] = [0.3, 0.01, 0.01, 0.01];
                 rates[ERC20BridgeSource.Eth2Dai] = [0.49, 0.02, 0.01, 0.01];
                 rates[ERC20BridgeSource.Uniswap] = [0.48, 0.01, 0.01, 0.01];
                 replaceSamplerOps({
@@ -1313,14 +1313,14 @@ describe.only('MarketOperationUtils tests', () => {
                 expect(improvedOrders).to.be.length(2);
                 const orderFillSources = getSortedOrderSources(MarketOperation.Sell, improvedOrders);
                 expect(orderFillSources).to.deep.eq([
-                    [ERC20BridgeSource.Native],
                     [ERC20BridgeSource.Eth2Dai, ERC20BridgeSource.Uniswap],
+                    [ERC20BridgeSource.Native],
                 ]);
             });
         });
     });
 
-    describe('createFillPaths', () => {
+    describe('createFills', () => {
         const takerAssetAmount = new BigNumber(5000000);
         const ethToOutputRate = new BigNumber(0.5);
         // tslint:disable-next-line:no-object-literal-type-assertion
@@ -1354,7 +1354,7 @@ describe.only('MarketOperationUtils tests', () => {
         };
 
         it('penalizes native fill based on target amount when target is smaller', () => {
-            const path = createFillPaths({
+            const path = createFills({
                 side: MarketOperation.Sell,
                 orders,
                 dexQuotes: [],
@@ -1367,7 +1367,7 @@ describe.only('MarketOperationUtils tests', () => {
         });
 
         it('penalizes native fill based on available amount when target is larger', () => {
-            const path = createFillPaths({
+            const path = createFills({
                 side: MarketOperation.Sell,
                 orders,
                 dexQuotes: [],
