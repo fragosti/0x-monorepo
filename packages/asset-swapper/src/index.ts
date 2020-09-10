@@ -133,6 +133,7 @@ export {
     CurveInfo,
     DexSample,
     ERC20BridgeSource,
+    ExchangeProxyOverhead,
     FeeSchedule,
     Fill,
     FillData,
