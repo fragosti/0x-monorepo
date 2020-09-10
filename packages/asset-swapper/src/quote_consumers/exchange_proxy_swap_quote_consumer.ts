@@ -15,6 +15,7 @@ import * as _ from 'lodash';
 
 import { constants } from '../constants';
 import {
+    AffiliateFee,
     CalldataInfo,
     ExchangeProxyContractOpts,
     MarketBuySwapQuote,
@@ -102,7 +103,9 @@ export class ExchangeProxySwapQuoteConsumer implements SwapQuoteConsumerBase {
         let calldataHexString: string;
 
         // VIP routes.
-        if (isDirectUniswapCompatible(quote, optsWithDefaults)) {
+        if (
+            isDirectSwapCompatible(quote, optsWithDefaults, [ERC20BridgeSource.UniswapV2, ERC20BridgeSource.SushiSwap])
+        ) {
             const source = quote.orders[0].fills[0].source;
             const fillData = quote.orders[0].fills[0].fillData as UniswapV2FillData;
             return {
@@ -128,7 +131,7 @@ export class ExchangeProxySwapQuoteConsumer implements SwapQuoteConsumerBase {
             };
         }
 
-        if (shouldGoDirectlyToLiquidityProvider(quote)) {
+        if (isDirectSwapCompatible(quote, optsWithDefaults, [ERC20BridgeSource.LiquidityProvider])) {
             calldataHexString = this._exchangeProxy
                 .sellToLiquidityProvider(
                     isToETH ? ETH_TOKEN_ADDRESS : buyToken,
@@ -279,7 +282,11 @@ function isBuyQuote(quote: SwapQuote): quote is MarketBuySwapQuote {
     return quote.type === MarketOperation.Buy;
 }
 
-function isDirectUniswapCompatible(quote: SwapQuote, opts: ExchangeProxyContractOpts): boolean {
+function isDirectSwapCompatible(
+    quote: SwapQuote,
+    opts: ExchangeProxyContractOpts,
+    sources: ERC20BridgeSource[],
+): boolean {
     // Must not be a mtx.
     if (opts.isMetaTransaction) {
         return false;
@@ -299,14 +306,8 @@ function isDirectUniswapCompatible(quote: SwapQuote, opts: ExchangeProxyContract
     }
     const fill = order.fills[0];
     // And that fill must be uniswap v2 or sushiswap.
-    if (![ERC20BridgeSource.UniswapV2, ERC20BridgeSource.SushiSwap].includes(fill.source)) {
+    if (!sources.includes(fill.source)) {
         return false;
     }
     return true;
-}
-
-function shouldGoDirectlyToLiquidityProvider(quote: SwapQuote): boolean {
-    return (
-        quote.orders.length === 1 && _.get(quote, 'orders[0].fills[0].source') === ERC20BridgeSource.LiquidityProvider
-    );
 }
