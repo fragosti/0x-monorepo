@@ -99,6 +99,7 @@ export class ExchangeProxySwapQuoteConsumer implements SwapQuoteConsumerBase {
         }
         const { buyTokenFeeAmount, sellTokenFeeAmount, recipient: feeRecipient } = affiliateFee;
         const minBuyAmount = BigNumber.max(0, quote.worstCaseQuoteInfo.makerAssetAmount.minus(buyTokenFeeAmount));
+        let calldataHexString: string;
 
         // VIP routes.
         if (isDirectUniswapCompatible(quote, optsWithDefaults)) {
@@ -128,7 +129,7 @@ export class ExchangeProxySwapQuoteConsumer implements SwapQuoteConsumerBase {
         }
 
         if (shouldGoDirectlyToLiquidityProvider(quote)) {
-            const calldataHexString = this._exchangeProxy
+            calldataHexString = this._exchangeProxy
                 .sellToLiquidityProvider(
                     isToETH ? ETH_TOKEN_ADDRESS : buyToken,
                     isFromETH ? ETH_TOKEN_ADDRESS : sellToken,
@@ -247,7 +248,7 @@ export class ExchangeProxySwapQuoteConsumer implements SwapQuoteConsumerBase {
             }),
         });
 
-        const calldataHexString = this._exchangeProxy
+        calldataHexString = this._exchangeProxy
             .transformERC20(
                 isFromETH ? ETH_TOKEN_ADDRESS : sellToken,
                 isToETH ? ETH_TOKEN_ADDRESS : buyToken,
