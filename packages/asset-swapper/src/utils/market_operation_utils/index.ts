@@ -14,7 +14,6 @@ import {
     FEE_QUOTE_SOURCES,
     ONE_ETHER,
     SELL_SOURCE_FILTER,
-    SELL_SOURCES,
     SOURCE_FLAGS,
     ZERO_AMOUNT,
 } from './constants';
